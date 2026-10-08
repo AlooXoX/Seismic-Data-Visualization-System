@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impacto de Sismos en México | Data Warehouse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+        }
+        /* Custom animations for scroll reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Subtle grid background for the hero */
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0f172a',
+                            light: '#1e293b',
+                            red: '#ef4444',
+                            orange: '#f97316',
+                            accent: '#ea580c'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased selection:bg-brand-orange selection:text-white">
+
+    <nav class="fixed w-full z-50 top-0 bg-brand-dark/80 backdrop-blur-md border-b border-white/10 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <svg class="w-8 h-8 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span class="font-bold text-xl tracking-tight">Sismo<span class="text-brand-orange">Data</span>MX</span>
+                </div>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#modelo" class="text-gray-300 hover:text-white transition-colors">Modelo de Datos</a>
+                    <a href="#caracteristicas" class="text-gray-300 hover:text-white transition-colors">Características</a>
+                    <a href="#contacto" class="bg-gradient-to-r from-brand-orange to-brand-red px-5 py-2 rounded-full font-semibold hover:shadow-lg hover:shadow-brand-orange/30 transition-all transform hover:-translate-y-0.5">
+                        Explorar Datos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-grid-pattern">
+        <!-- Glow effect behind hero -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-orange/20 rounded-full blur-[120px] -z-10 opacity-50"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-brand-orange text-sm font-medium mb-6 animate-fade-in-up">
+                <span id="status-dot" class="flex h-2 w-2 rounded-full bg-gray-500 animate-pulse"></span>
+                <span id="status-text">Comprobando conexión...</span>
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
+                Impacto de Sismos <br class="hidden md:block" />
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-brand-red">
+                    en México
+                </span>
+            </h1>
+            
+            <p class="mt-4 max-w-2xl text-lg md:text-xl text-gray-400 mx-auto mb-10 leading-relaxed">
+                Un modelo analítico robusto diseñado para evaluar las consecuencias demográficas y económicas de la actividad sísmica, facilitando la toma de decisiones basada en datos empíricos.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <button class="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-brand-dark font-bold text-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 group shadow-xl">
+                    Explorar Datos
+                    <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </button>
+                <a href="#modelo" class="w-full sm:w-auto px-8 py-4 rounded-full border border-white/20 text-white font-semibold text-lg hover:bg-white/5 transition-colors flex items-center justify-center gap-2">
+                    Conocer la Arquitectura
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="modelo" class="py-24 bg-brand-light relative border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Arquitectura del <span class="text-brand-orange">Modelo en Estrella</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">
+                    Centralizamos los indicadores críticos en una Tabla de Hechos, rodeada de dimensiones contextuales que permiten cruces de información multidimensional a gran velocidad.
+                </p>
+            </div>
+
+            <div class="relative max-w-5xl mx-auto reveal">
+                <!-- Center: Fact Table -->
+                <div class="relative z-10 bg-gradient-to-br from-brand-orange to-brand-red p-1 rounded-2xl shadow-2xl shadow-brand-red/20 max-w-sm mx-auto mb-12 md:mb-0 md:absolute md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2">
+                    <div class="bg-brand-dark p-6 rounded-xl text-center h-full flex flex-col justify-center">
+                        <svg class="w-12 h-12 text-brand-orange mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+                        </svg>
+                        <h3 class="text-xl font-bold text-white mb-2">Tabla de Hechos</h3>
+                        <p class="text-sm text-gray-300">
+                            Centraliza métricas de impacto: población afectada, índice Z-score y determinantes de riesgo.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Grid of Dimensions -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-x-64 md:gap-y-32">
+                    <!-- Geográfica -->
+                    <div class="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-colors">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-blue-500/20 text-blue-400 rounded-lg">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <h4 class="text-lg font-bold">Dim. Geográfica</h4>
+                        </div>
+                        <p class="text-sm text-gray-400">Catálogo demográfico de las 32 entidades federativas, detallando población total, femenina y masculina.</p>
+                    </div>
+
+                    <!-- Temporal -->
+                    <div class="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-colors">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-purple-500/20 text-purple-400 rounded-lg">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <h4 class="text-lg font-bold">Dim. Temporal</h4>
+                        </div>
+                        <p class="text-sm text-gray-400">Segmentación cronológica (año, mes, trimestre) con registro histórico desde 1900 hasta 1975.</p>
+                    </div>
+
+                    <!-- Sismos -->
+                    <div class="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-colors">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-brand-red/20 text-brand-red rounded-lg">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            </div>
+                            <h4 class="text-lg font-bold">Dim. Sismos</h4>
+                        </div>
+                        <p class="text-sm text-gray-400">Propiedades geofísicas de cada evento: magnitud, profundidad, latitud, longitud y estado de referencia.</p>
+                    </div>
+
+                    <!-- Económica -->
+                    <div class="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-colors">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-green-500/20 text-green-400 rounded-lg">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <h4 class="text-lg font-bold">Dim. Económica</h4>
+                        </div>
+                        <p class="text-sm text-gray-400">Indicadores macroeconómicos locales, producción bruta total, valor agregado y formación de capital.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="caracteristicas" class="py-24 bg-brand-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Capacidades Analíticas</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">
+                    Descubre insights valiosos mediante el cruce de datos estructurados para comprender el impacto real de los fenómenos naturales.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="bg-gradient-to-b from-white/5 to-transparent border border-white/10 p-8 rounded-3xl hover:-translate-y-2 transition-transform duration-300 reveal group">
+                    <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-500/20 transition-colors">
+                        <svg class="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Análisis Demográfico</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Identifica poblaciones vulnerables. Cruza datos de epicentros con la densidad poblacional estatal y la distribución por género del INEGI.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-gradient-to-b from-white/5 to-transparent border border-white/10 p-8 rounded-3xl hover:-translate-y-2 transition-transform duration-300 reveal group delay-100">
+                    <div class="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-green-500/20 transition-colors">
+                        <svg class="w-7 h-7 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Impacto Económico</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Evalúa la correlación entre la magnitud de los sismos y las fluctuaciones en la producción bruta total y el valor agregado de los estados afectados.
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-gradient-to-b from-white/5 to-transparent border border-white/10 p-8 rounded-3xl hover:-translate-y-2 transition-transform duration-300 reveal group delay-200">
+                    <div class="w-14 h-14 bg-brand-red/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brand-red/20 transition-colors">
+                        <svg class="w-7 h-7 text-brand-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Determinantes de Riesgo</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Calcula niveles de criticidad utilizando Z-scores y datos históricos de magnitud y profundidad para modelar áreas de alto riesgo sísmico.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contacto" class="bg-brand-light border-t border-white/5 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <svg class="w-6 h-6 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span class="font-bold text-lg">Sismo<span class="text-brand-orange">Data</span>MX</span>
+                </div>
+                <div class="text-gray-400 text-sm">
+                    &copy; 2026 Proyecto Data Warehouse. Diseñado para el análisis de sismos en México.
+                </div>
+                <div class="flex gap-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const reveals = document.querySelectorAll(".reveal");
+
+            const revealOnScroll = () => {
+                const windowHeight = window.innerHeight;
+                const elementVisible = 100;
+
+                reveals.forEach((reveal) => {
+                    const elementTop = reveal.getBoundingClientRect().top;
+                    if (elementTop < windowHeight - elementVisible) {
+                        reveal.classList.add("active");
+                    }
+                });
+            };
+
+            window.addEventListener("scroll", revealOnScroll);
+            revealOnScroll(); // Trigger on load
+            
+            // Navbar background opacity on scroll
+            const nav = document.querySelector('nav');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    nav.classList.add('shadow-lg', 'bg-brand-dark/95');
+                    nav.classList.remove('bg-brand-dark/80');
+                } else {
+                    nav.classList.remove('shadow-lg', 'bg-brand-dark/95');
+                    nav.classList.add('bg-brand-dark/80');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
