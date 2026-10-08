@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Impacto de Sismos en México | Data Warehouse</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -61,7 +62,8 @@
                 <div class="hidden md:flex space-x-8 items-center">
                     <a href="#modelo" class="text-gray-300 hover:text-white transition-colors">Modelo de Datos</a>
                     <a href="#caracteristicas" class="text-gray-300 hover:text-white transition-colors">Características</a>
-                    <a href="#contacto" class="bg-gradient-to-r from-brand-orange to-brand-red px-5 py-2 rounded-full font-semibold hover:shadow-lg hover:shadow-brand-orange/30 transition-all transform hover:-translate-y-0.5">
+                    <a href="#consultas" class="text-gray-300 hover:text-white transition-colors">Consola SQL</a>
+                    <a href="#explorador" class="bg-gradient-to-r from-brand-orange to-brand-red px-5 py-2 rounded-full font-semibold hover:shadow-lg hover:shadow-brand-orange/30 transition-all transform hover:-translate-y-0.5">
                         Explorar Datos
                     </a>
                 </div>
@@ -91,7 +93,7 @@
             </p>
             
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <button class="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-brand-dark font-bold text-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 group shadow-xl">
+                <button onclick="document.getElementById('explorador').scrollIntoView({behavior:'smooth'})" class="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-brand-dark font-bold text-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 group shadow-xl">
                     Explorar Datos
                     <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -229,6 +231,159 @@
         </div>
     </section>
 
+    <section id="explorador" class="py-24 bg-brand-light border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Explorador de <span class="text-brand-orange">Sismos</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">
+                    Filtra por año, estado y magnitud. No necesitas saber SQL: las gráficas, el mapa y la tabla se actualizan solos.
+                </p>
+            </div>
+
+            <!-- Filtros -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
+                <div class="grid grid-cols-2 md:grid-cols-6 gap-4 items-end">
+                    <label class="text-sm">
+                        <span class="block text-gray-400 mb-1">Desde</span>
+                        <select id="f-desde" class="w-full bg-brand-dark border border-white/10 rounded-lg px-3 py-2"></select>
+                    </label>
+                    <label class="text-sm">
+                        <span class="block text-gray-400 mb-1">Hasta</span>
+                        <select id="f-hasta" class="w-full bg-brand-dark border border-white/10 rounded-lg px-3 py-2"></select>
+                    </label>
+                    <label class="text-sm col-span-2">
+                        <span class="block text-gray-400 mb-1">Estado</span>
+                        <select id="f-zona" class="w-full bg-brand-dark border border-white/10 rounded-lg px-3 py-2"></select>
+                    </label>
+                    <label class="text-sm">
+                        <span class="block text-gray-400 mb-1">Magnitud mínima: <b id="f-mag-v" class="text-brand-orange">—</b></span>
+                        <input id="f-mag" type="range" class="w-full accent-orange-500">
+                    </label>
+                    <label class="text-sm">
+                        <span class="block text-gray-400 mb-1">Ordenar tabla por</span>
+                        <select id="f-orden" class="w-full bg-brand-dark border border-white/10 rounded-lg px-3 py-2">
+                            <option value="magnitud">Más fuertes</option>
+                            <option value="fecha">Más recientes</option>
+                            <option value="zscore">Mayor riesgo (Z-score)</option>
+                            <option value="poblacion">Más población afectada</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="flex items-center gap-4 mt-4">
+                    <button id="f-reset" type="button" class="text-sm px-4 py-2 rounded-full border border-white/20 hover:bg-white/5">Restablecer filtros</button>
+                    <span id="explorador-estado" class="text-xs text-gray-400"></span>
+                </div>
+            </div>
+            <div id="explorador-error" class="hidden mb-6 bg-red-500/10 border border-red-500/30 text-red-300 rounded-2xl p-4 text-sm"></div>
+
+            <!-- KPIs -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4"><div class="text-xs text-gray-400">Sismos</div><div id="kpi-eventos" class="text-xl xl:text-2xl font-extrabold mt-1 leading-tight">—</div></div>
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4"><div class="text-xs text-gray-400">Magnitud máxima</div><div id="kpi-magmax" class="text-xl xl:text-2xl font-extrabold mt-1 leading-tight text-brand-red">—</div></div>
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4"><div class="text-xs text-gray-400">Magnitud promedio</div><div id="kpi-magprom" class="text-xl xl:text-2xl font-extrabold mt-1 leading-tight">—</div></div>
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4"><div class="text-xs text-gray-400">Población afectada</div><div id="kpi-pob" class="text-xl xl:text-2xl font-extrabold mt-1 leading-tight">—</div></div>
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4"><div class="text-xs text-gray-400">Impacto económico</div><div id="kpi-eco" class="text-xl xl:text-2xl font-extrabold mt-1 leading-tight">—</div></div>
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4"><div class="text-xs text-gray-400">Z-score promedio</div><div id="kpi-z" class="text-xl xl:text-2xl font-extrabold mt-1 leading-tight">—</div></div>
+            </div>
+
+            <!-- Gráficas -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                    <h3 class="font-bold mb-3">Sismos y magnitud por año</h3>
+                    <div class="relative h-72"><canvas id="chart-anio"></canvas></div>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                    <h3 class="font-bold mb-3">Estados con más población afectada</h3>
+                    <div class="relative h-72"><canvas id="chart-estado"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Mapa -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <h3 class="font-bold">Mapa de epicentros</h3>
+                    <span class="text-xs text-gray-400 flex items-center gap-2">
+                        menor magnitud <span class="inline-block w-24 h-2 rounded-full" style="background:linear-gradient(to right,#facc15,#ef4444)"></span> mayor
+                    </span>
+                </div>
+                <div id="mapa" class="w-full h-[420px] rounded-xl overflow-hidden z-0"></div>
+                <p id="mapa-nota" class="text-xs text-gray-500 mt-2"></p>
+            </div>
+
+            <!-- Tabla de eventos -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <h3 class="font-bold">Eventos</h3>
+                    <button id="csv-eventos" type="button" class="text-sm px-4 py-1.5 rounded-full border border-white/20 hover:bg-white/5">Descargar CSV</button>
+                </div>
+                <div class="overflow-auto max-h-[420px] rounded-xl border border-white/5">
+                    <table id="tabla-eventos" class="w-full text-sm text-left"></table>
+                </div>
+                <p id="tabla-nota" class="text-xs text-gray-500 mt-2"></p>
+            </div>
+
+            <!-- SQL generado -->
+            <details class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                <summary class="cursor-pointer font-semibold">Ver la consulta SQL que se ejecutó</summary>
+                <pre id="sql-generado" class="mt-3 bg-brand-dark rounded-xl p-4 text-xs text-green-300 overflow-auto"></pre>
+                <button id="abrir-en-consola" type="button" class="mt-3 text-sm px-4 py-1.5 rounded-full bg-gradient-to-r from-brand-orange to-brand-red font-semibold">Abrir en la consola para editarla</button>
+            </details>
+        </div>
+    </section>
+
+    <section id="consultas" class="py-24 bg-brand-dark border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Modo avanzado: <span class="text-brand-orange">Consola SQL</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">
+                    Para quien sí sabe SQL: ejecuta consultas de solo lectura sobre el Data Warehouse. Elige un ejemplo, haz clic en una tabla o columna del esquema para insertarla, o escribe la tuya.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Columna izquierda: ejemplos, esquema, historial -->
+                <aside class="space-y-6">
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <h3 class="font-bold mb-3">Consultas de ejemplo</h3>
+                        <div id="ejemplos" class="flex flex-col gap-2 text-sm"></div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <h3 class="font-bold mb-3">Esquema</h3>
+                        <div id="esquema" class="text-sm text-gray-300 space-y-1 max-h-64 overflow-auto"></div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold">Mis consultas</h3>
+                            <button id="limpiar-historial" class="text-xs text-gray-400 hover:text-white">Borrar</button>
+                        </div>
+                        <div id="historial" class="flex flex-col gap-2 text-sm max-h-64 overflow-auto"></div>
+                    </div>
+                </aside>
+
+                <!-- Columna derecha: editor y resultados -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="bg-brand-dark border border-white/10 rounded-2xl p-4">
+                        <textarea id="sql-input" rows="9" spellcheck="false"
+                            class="w-full bg-transparent font-mono text-sm text-green-300 outline-none resize-y"
+                            placeholder="SELECT * FROM dim_sismos LIMIT 10"></textarea>
+                        <div class="flex flex-wrap items-center gap-3 mt-3">
+                            <button id="ejecutar" class="px-6 py-2 rounded-full bg-gradient-to-r from-brand-orange to-brand-red font-semibold hover:shadow-lg hover:shadow-brand-orange/30 transition-all">Ejecutar</button>
+                            <span class="text-xs text-gray-500">Ctrl + Enter · solo SELECT · máx. 500 filas</span>
+                            <button id="csv-consola" type="button" class="hidden text-xs px-3 py-1 rounded-full border border-white/20 hover:bg-white/5">Descargar CSV</button>
+                            <span id="estado-consulta" class="text-xs text-gray-400 ml-auto"></span>
+                        </div>
+                    </div>
+                    <div id="error-consulta" class="hidden bg-red-500/10 border border-red-500/30 text-red-300 rounded-2xl p-4 text-sm font-mono whitespace-pre-wrap"></div>
+                    <div class="bg-white/5 border border-white/10 rounded-2xl overflow-auto max-h-[480px]">
+                        <table id="resultados" class="w-full text-sm text-left">
+                            <tbody><tr><td class="p-6 text-gray-500">Los resultados aparecerán aquí.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <footer id="contacto" class="bg-brand-light border-t border-white/5 pt-16 pb-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between items-center gap-6">
@@ -284,5 +439,41 @@
             });
         });
     </script>
+    <script>
+    const CONTENEDOR_URL = '/api/health.php';
+
+    async function checarEstadoContenedor() {
+        const dot = document.getElementById('status-dot');
+        const text = document.getElementById('status-text');
+
+        try {
+            // Intentamos contactar al contenedor
+            const response = await fetch(CONTENEDOR_URL);
+            
+            // Si el contenedor responde exitosamente (código 200-299)
+            if (response.ok) {
+                dot.className = 'w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]';
+                text.textContent = 'Data Warehouse Activo';
+                text.className = 'text-sm font-medium text-green-400';
+            } else {
+                throw new Error('Respondió con error');
+            }
+        } catch (error) {
+            // Si el contenedor está apagado, la conexión es rechazada y cae aquí
+            dot.className = 'w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]';
+            text.textContent = 'Data Warehouse Inactivo';
+            text.className = 'text-sm font-medium text-red-400';
+        }
+    }
+
+    // 1. Ejecutar la revisión inmediatamente al abrir la página
+    checarEstadoContenedor();
+
+    // 2. Volver a revisar automáticamente cada 10 segundos (10000 milisegundos)
+    setInterval(checarEstadoContenedor, 10000);
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="/assets/app.js"></script>
 </body>
 </html>
