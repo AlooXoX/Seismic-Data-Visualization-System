@@ -13,9 +13,10 @@ services:
       - db
     environment:
       - POSTGRES_HOST=db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=datawarehouse
+      # La web usa un rol de SOLO LECTURA (creado en 06-readonly_user.sql)
+      - POSTGRES_RO_USER=sismos_ro
+      - POSTGRES_RO_PASSWORD=sismos_ro
     networks:
       - app-network
 
@@ -32,6 +33,7 @@ services:
       - ./sql/03-dim_sismos.sql:/docker-entrypoint-initdb.d/03-dim_sismos.sql
       - ./sql/04-dim_economia.sql:/docker-entrypoint-initdb.d/04-dim_economia.sql
       - ./sql/05-fact_impacto_sismos_imputed.sql:/docker-entrypoint-initdb.d/05-fact_impacto_sismos_imputed.sql
+      - ./sql/06-readonly_user.sql:/docker-entrypoint-initdb.d/06-readonly_user.sql
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
