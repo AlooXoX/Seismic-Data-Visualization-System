@@ -334,6 +334,39 @@ LIMIT 15;</textarea>
             return out.map(s => s.trim()).filter(Boolean);
         }
 
+        let duplicadosOmitidos = 0;
+
+        // Separa "(a,b),(c,d)" en filas individuales respetando comillas y paréntesis
+        function separarFilas(texto) {
+            const filas = []; let depth = 0, q = null, inicio = -1;
+            for (let i = 0; i < texto.length; i++) {
+                const ch = texto[i];
+                if (q) { if (ch === q) q = null; continue; }
+                if (ch === "'" || ch === '"') { q = ch; continue; }
+                if (ch === '(') { if (depth === 0) inicio = i; depth++; }
+                else if (ch === ')') { depth--; if (depth === 0 && inicio >= 0) { filas.push(texto.slice(inicio, i + 1)); inicio = -1; } }
+            }
+            return filas;
+        }
+
+        // Ejecuta una sentencia; si un INSERT choca con una llave primaria repetida,
+        // inserta fila por fila y omite solo los duplicados (equivale a ON CONFLICT DO NOTHING)
+        function ejecutarSentencia(stmt) {
+            try { alasql(stmt); }
+            catch (e) {
+                const m = stmt.match(/^(INSERT\s+INTO[\s\S]*?)\bVALUES\b([\s\S]*)$/i);
+                if (m && /primary key index/i.test(e.message)) {
+                    for (const fila of separarFilas(m[2])) {
+                        try { alasql(m[1] + ' VALUES ' + fila); }
+                        catch (e2) {
+                            if (/primary key index/i.test(e2.message)) duplicadosOmitidos++;
+                            else throw e2;
+                        }
+                    }
+                } else throw e;
+            }
+        }
+
         async function cargarArchivoSQL(nombreArchivo) {
             const ruta = RUTA_SQL + nombreArchivo;
             const response = await fetch(ruta);
@@ -349,8 +382,10 @@ LIMIT 15;</textarea>
             sqlText = sqlText.replace(/ALTER ROLE [\s\S]*?;/gi, '');
             sqlText = sqlText.replace(/^\s*(BEGIN|COMMIT|START TRANSACTION)\s*;/gim, '');
 
+            sqlText = sqlText.replace(/\s+ON\s+CONFLICT[^;]*/gi, '');        // AlaSQL no soporta ON CONFLICT
+
             for (const stmt of dividirSentencias(sqlText)) {
-                try { alasql(stmt); }
+                try { ejecutarSentencia(stmt); }
                 catch (e) { throw new Error(`${nombreArchivo}: ${e.message}\n→ Sentencia: ${stmt.slice(0, 160)}...`); }
             }
         }
@@ -367,7 +402,8 @@ LIMIT 15;</textarea>
                 }
                 statusDot.className = 'w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]';
                 statusText.className = 'text-green-400';
-                statusText.textContent = 'Data Warehouse (En Memoria) Activo y Listo';
+                statusText.textContent = 'Data Warehouse (En Memoria) Activo y Listo' +
+                    (duplicadosOmitidos ? ` · ${duplicadosOmitidos} fila(s) duplicada(s) omitida(s)` : '');
 
                 btn.disabled = false;
                 btn.className = 'bg-brand-orange hover:bg-brand-red text-white font-bold py-2 px-6 rounded-lg transition-colors cursor-pointer';
