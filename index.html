@@ -6,59 +6,29 @@
     <title>Impacto de Sismos en México | Data Warehouse</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <!-- Librería para ejecutar SQL en el navegador -->
     <script src="https://cdn.jsdelivr.net/npm/alasql@4"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-        }
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease-out;
-        }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
         .bg-grid-pattern {
             background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
                               linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
             background-size: 40px 40px;
         }
-        /* Loader animation */
-        .loader {
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top-color: #f97316;
-            border-radius: 50%;
-            width: 1rem;
-            height: 1rem;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader { border: 3px solid rgba(255,255,255,0.1); border-top-color: #f97316; border-radius: 50%; width: 1rem; height: 1rem; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        section[id] { scroll-margin-top: 4rem; }
     </style>
     <script>
         tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            dark: '#0f172a',
-                            light: '#1e293b',
-                            red: '#ef4444',
-                            orange: '#f97316',
-                            accent: '#ea580c'
-                        }
-                    }
-                }
-            }
+            theme: { extend: { colors: { brand: { dark: '#0f172a', light: '#1e293b', red: '#ef4444', orange: '#f97316', accent: '#ea580c' } } } }
         }
     </script>
 </head>
 <body class="antialiased selection:bg-brand-orange selection:text-white">
 
+    <!-- NAV -->
     <nav class="fixed w-full z-50 top-0 bg-brand-dark/80 backdrop-blur-md border-b border-white/10 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -71,6 +41,7 @@
                 <div class="hidden md:flex space-x-8 items-center">
                     <a href="#modelo" class="text-gray-300 hover:text-white transition-colors">Modelo de Datos</a>
                     <a href="#caracteristicas" class="text-gray-300 hover:text-white transition-colors">Características</a>
+                    <a href="#ejemplos" class="text-gray-300 hover:text-white transition-colors">Ejemplos</a>
                     <a href="#explorar" class="bg-gradient-to-r from-brand-orange to-brand-red px-5 py-2 rounded-full font-semibold hover:shadow-lg hover:shadow-brand-orange/30 transition-all transform hover:-translate-y-0.5">
                         Explorar Datos
                     </a>
@@ -79,28 +50,21 @@
         </div>
     </nav>
 
+    <!-- HERO -->
     <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-grid-pattern">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-orange/20 rounded-full blur-[120px] -z-10 opacity-50"></div>
-        
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            
-            <!-- Etiqueta de estado de la base de datos dinámica -->
-            <div id="db-status-container" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm font-medium mb-6 transition-colors">
+            <div id="db-status-container" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm font-medium mb-6">
                 <div id="status-dot" class="loader"></div>
                 <span id="status-text" class="text-gray-300">Cargando archivos SQL del repositorio...</span>
             </div>
-            
             <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
                 Impacto de Sismos <br class="hidden md:block" />
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-brand-red">
-                    en México
-                </span>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-brand-red">en México</span>
             </h1>
-            
             <p class="mt-4 max-w-2xl text-lg md:text-xl text-gray-400 mx-auto mb-10 leading-relaxed">
                 Un modelo analítico robusto diseñado para evaluar las consecuencias demográficas y económicas de la actividad sísmica, facilitando la toma de decisiones basada en datos empíricos.
             </p>
-            
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <a href="#explorar" class="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-brand-dark font-bold text-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 group shadow-xl">
                     Consultar Data Warehouse
@@ -112,7 +76,81 @@
         </div>
     </section>
 
-    <!-- EXPLORADOR SQL ESTÁTICO (CONECTADO AL REPOSITORIO) -->
+    <!-- MODELO DE DATOS (tablas dinámicas) -->
+    <section id="modelo" class="py-24 bg-brand-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Arquitectura del <span class="text-brand-orange">Modelo en Estrella</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">
+                    Una tabla de hechos al centro y cuatro dimensiones alrededor. Estos son los nombres exactos que debes usar en tus consultas
+                    (las columnas se leen automáticamente de tus archivos SQL).
+                </p>
+            </div>
+
+            <div id="schemaGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+            <p class="text-center text-gray-500 text-sm mt-8 reveal">
+                Las llaves <span class="font-mono text-brand-orange">id_*</span> de la tabla de hechos conectan con cada dimensión mediante <span class="font-mono text-brand-orange">JOIN</span>.
+            </p>
+        </div>
+    </section>
+
+    <!-- CARACTERÍSTICAS -->
+    <section id="caracteristicas" class="py-24 bg-brand-light border-y border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-14 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Características <span class="text-brand-orange">principales</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">Todo corre en tu navegador: sin servidor, sin instalaciones.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="reveal bg-brand-dark border border-white/10 rounded-2xl p-6 hover:border-brand-orange/50 transition-colors">
+                    <div class="text-3xl mb-3">⭐</div>
+                    <h3 class="font-bold text-lg mb-2">Modelo en estrella</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Tabla de hechos de impacto sísmico conectada a dimensiones de zonas, tiempo, sismos y economía.</p>
+                </div>
+                <div class="reveal bg-brand-dark border border-white/10 rounded-2xl p-6 hover:border-brand-orange/50 transition-colors">
+                    <div class="text-3xl mb-3">⚡</div>
+                    <h3 class="font-bold text-lg mb-2">SQL en el navegador</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Los archivos <span class="font-mono">.sql</span> del repositorio se cargan en memoria con AlaSQL. No hay backend.</p>
+                </div>
+                <div class="reveal bg-brand-dark border border-white/10 rounded-2xl p-6 hover:border-brand-orange/50 transition-colors">
+                    <div class="text-3xl mb-3">📚</div>
+                    <h3 class="font-bold text-lg mb-2">Consultas de ejemplo</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Plantillas listas para usar, desde un simple SELECT hasta cruces entre varias tablas.</p>
+                </div>
+                <div class="reveal bg-brand-dark border border-white/10 rounded-2xl p-6 hover:border-brand-orange/50 transition-colors">
+                    <div class="text-3xl mb-3">🧭</div>
+                    <h3 class="font-bold text-lg mb-2">Esquema explorable</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Consulta los nombres de tablas y columnas sin abrir el repositorio.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EJEMPLOS -->
+    <section id="ejemplos" class="py-24 bg-brand-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Consultas de <span class="text-brand-orange">ejemplo</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">¿Nuevo en SQL? Presiona “Probar” y la consulta se copiará al editor y se ejecutará sola. Luego modifícala para aprender.</p>
+            </div>
+            <div id="examplesGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+            <div class="mt-12 max-w-3xl mx-auto bg-brand-light border border-white/10 rounded-2xl p-6 reveal">
+                <h3 class="font-bold mb-3">Mini guía de SQL</h3>
+                <ul class="text-sm text-gray-400 space-y-2 leading-relaxed">
+                    <li><span class="font-mono text-green-400">SELECT</span> — qué columnas quieres ver. <span class="font-mono text-green-400">*</span> significa “todas”.</li>
+                    <li><span class="font-mono text-green-400">FROM</span> — de qué tabla vienen los datos.</li>
+                    <li><span class="font-mono text-green-400">WHERE</span> — filtra filas (por ejemplo, <span class="font-mono">magnitud &gt; 7</span>).</li>
+                    <li><span class="font-mono text-green-400">JOIN ... ON</span> — une tablas usando sus columnas <span class="font-mono">id_*</span>.</li>
+                    <li><span class="font-mono text-green-400">GROUP BY</span> con <span class="font-mono text-green-400">COUNT / SUM / AVG</span> — agrupa y resume.</li>
+                    <li><span class="font-mono text-green-400">ORDER BY</span> y <span class="font-mono text-green-400">LIMIT</span> — ordena y limita el número de filas.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONSOLA SQL -->
     <section id="explorar" class="py-24 bg-brand-light relative border-y border-white/5">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-10 reveal">
@@ -122,8 +160,11 @@
 
             <div class="max-w-5xl mx-auto bg-brand-dark border border-white/10 rounded-xl overflow-hidden shadow-2xl reveal">
                 <div class="bg-gray-900 p-4 border-b border-white/10">
+                    <div class="flex flex-wrap items-center gap-2 mb-3" id="tableChips">
+                        <span class="text-gray-500 text-xs mr-1">Tablas:</span>
+                    </div>
                     <label class="block text-gray-400 text-sm font-mono mb-2">Editor SQL</label>
-                    <textarea id="sqlInput" class="w-full bg-gray-800 text-green-400 font-mono p-4 rounded-lg outline-none border border-gray-700 focus:border-brand-orange transition-colors resize-none" rows="5">
+                    <textarea id="sqlInput" class="w-full bg-gray-800 text-green-400 font-mono p-4 rounded-lg outline-none border border-gray-700 focus:border-brand-orange transition-colors resize-y" rows="7" spellcheck="false">
 -- Ejemplo de cruce entre la tabla de hechos y las dimensiones:
 SELECT s.estado, s.magnitud, z.pobtot AS poblacion, f.impacto_economico, t.anio
 FROM fact_impacto_sismos_imputed f
@@ -133,176 +174,287 @@ JOIN dim_tiempo t ON f.id_tiempo = t.id_tiempo
 WHERE s.magnitud > 7.0
 ORDER BY s.magnitud DESC
 LIMIT 15;</textarea>
-                    <button id="btnEjecutar" onclick="ejecutarConsulta()" disabled class="mt-4 bg-gray-600 text-gray-400 font-bold py-2 px-6 rounded-lg transition-colors cursor-not-allowed">
-                        Esperando carga de BD...
-                    </button>
+                    <div class="flex items-center gap-3 mt-4">
+                        <button id="btnEjecutar" onclick="ejecutarConsulta()" disabled class="bg-gray-600 text-gray-400 font-bold py-2 px-6 rounded-lg transition-colors cursor-not-allowed">
+                            Esperando carga de BD...
+                        </button>
+                        <span id="rowCount" class="text-gray-500 text-sm"></span>
+                    </div>
                 </div>
-                
+
                 <div class="p-4 overflow-x-auto max-h-[500px] overflow-y-auto">
                     <table class="w-full text-left text-sm text-gray-300">
-                        <thead class="text-xs text-gray-400 uppercase bg-gray-800/50 border-b border-white/10 sticky top-0">
+                        <thead class="text-xs text-gray-400 uppercase bg-gray-800 border-b border-white/10 sticky top-0">
                             <tr id="tableHeaders"></tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
                     </table>
-                    <div id="errorMessage" class="hidden text-brand-red p-4 font-mono text-sm"></div>
+                    <div id="errorMessage" class="hidden text-brand-red p-4 font-mono text-sm whitespace-pre-wrap"></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- SECCIONES ORIGINALES -->
-    <section id="modelo" class="py-24 bg-brand-dark">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
-            <h2 class="text-3xl md:text-4xl font-bold mb-4">Arquitectura del <span class="text-brand-orange">Modelo en Estrella</span></h2>
-            <p class="text-gray-400">Implementación de fact_impacto_sismos_imputed y sus dimensiones relacionales cargadas dinámicamente.</p>
-        </div>
-    </section>
-
-    <footer id="contacto" class="bg-brand-light border-t border-white/5 pt-16 pb-8">
+    <footer id="contacto" class="bg-brand-dark border-t border-white/5 pt-16 pb-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
             &copy; 2026 Proyecto Data Warehouse. Diseñado para el análisis de sismos en México.
         </div>
     </footer>
 
     <script>
-        // Animaciones Scroll Reveal
-        document.addEventListener("DOMContentLoaded", () => {
-            const reveals = document.querySelectorAll(".reveal");
-            const revealOnScroll = () => {
-                const windowHeight = window.innerHeight;
-                reveals.forEach((reveal) => {
-                    if (reveal.getBoundingClientRect().top < windowHeight - 100) {
-                        reveal.classList.add("active");
-                    }
-                });
-            };
-            window.addEventListener("scroll", revealOnScroll);
-            revealOnScroll();
-            
-            const nav = document.querySelector('nav');
-            window.addEventListener('scroll', () => {
-                nav.classList.toggle('shadow-lg', window.scrollY > 50);
-                nav.classList.toggle('bg-brand-dark/95', window.scrollY > 50);
-            });
-            
-            // Iniciar carga del Data Warehouse estático
-            inicializarBaseDeDatos();
-        });
+        // ----------------------------------------------------------------------
+        // CONFIGURACIÓN: archivos SQL del repositorio (deben estar junto a index.html)
+        // y su descripción para la sección "Modelo de Datos".
+        // ----------------------------------------------------------------------
+        // Carpeta (relativa a index.html) donde están los archivos .sql
+        const RUTA_SQL = 'sql/';
+
+        const ARCHIVOS = [
+            { file: '00-datawarehouse_tables.sql',       table: null,                               desc: 'Definición de las tablas del Data Warehouse.' },
+            { file: '01-dim_zonas.sql',                  table: 'dim_zonas',                        desc: 'Dimensión de zonas geográficas y datos demográficos (ej. pobtot = población total).' },
+            { file: '02-dim_tiempo.sql',                 table: 'dim_tiempo',                       desc: 'Dimensión de tiempo: año y otros atributos de fecha.' },
+            { file: '03-dim_sismos.sql',                 table: 'dim_sismos',                       desc: 'Dimensión de sismos: estado, magnitud y datos del evento.' },
+            { file: '04-dim_economia.sql',               table: 'dim_economia',                     desc: 'Dimensión de indicadores económicos.' },
+            { file: '05-fact_impacto_sismos_imputed.sql',table: 'fact_impacto_sismos_imputed',      desc: 'Tabla de hechos: impacto económico y llaves hacia todas las dimensiones.', fact: true }
+        ];
+
+        const EJEMPLOS = [
+            { nivel: 'Básico', color: 'green', titulo: 'Ver los primeros sismos',
+              explica: 'Muestra las primeras 10 filas de la tabla de sismos para conocer sus columnas.',
+              sql: 'SELECT *\nFROM dim_sismos\nLIMIT 10;' },
+            { nivel: 'Básico', color: 'green', titulo: '¿Cuántos sismos hay?',
+              explica: 'COUNT(*) cuenta todas las filas de la tabla.',
+              sql: 'SELECT COUNT(*) AS total_sismos\nFROM dim_sismos;' },
+            { nivel: 'Básico', color: 'green', titulo: 'Sismos fuertes (magnitud ≥ 6)',
+              explica: 'WHERE filtra solo las filas que cumplen la condición; ORDER BY ... DESC ordena de mayor a menor.',
+              sql: 'SELECT estado, magnitud\nFROM dim_sismos\nWHERE magnitud >= 6\nORDER BY magnitud DESC\nLIMIT 20;' },
+            { nivel: 'Intermedio', color: 'yellow', titulo: 'Sismos por estado',
+              explica: 'GROUP BY agrupa por estado y COUNT cuenta cuántos hay en cada uno.',
+              sql: 'SELECT estado, COUNT(*) AS total\nFROM dim_sismos\nGROUP BY estado\nORDER BY total DESC\nLIMIT 10;' },
+            { nivel: 'Intermedio', color: 'yellow', titulo: 'Magnitud promedio por estado',
+              explica: 'AVG calcula el promedio y ROUND lo redondea a 2 decimales.',
+              sql: 'SELECT estado,\n       ROUND(AVG(magnitud), 2) AS magnitud_promedio,\n       MAX(magnitud) AS magnitud_maxima\nFROM dim_sismos\nGROUP BY estado\nORDER BY magnitud_promedio DESC\nLIMIT 10;' },
+            { nivel: 'Avanzado', color: 'red', titulo: 'Impacto económico por año',
+              explica: 'JOIN une la tabla de hechos con la dimensión de tiempo; SUM suma el impacto de cada año.',
+              sql: 'SELECT t.anio,\n       SUM(f.impacto_economico) AS impacto_total\nFROM fact_impacto_sismos_imputed f\nJOIN dim_tiempo t ON f.id_tiempo = t.id_tiempo\nGROUP BY t.anio\nORDER BY t.anio;' },
+            { nivel: 'Avanzado', color: 'red', titulo: 'Impacto económico por estado',
+              explica: 'Une hechos con sismos para saber qué estados acumulan más impacto económico.',
+              sql: 'SELECT s.estado,\n       COUNT(*) AS eventos,\n       SUM(f.impacto_economico) AS impacto_total\nFROM fact_impacto_sismos_imputed f\nJOIN dim_sismos s ON f.id_sismo = s.id_sismo\nGROUP BY s.estado\nORDER BY impacto_total DESC\nLIMIT 10;' },
+            { nivel: 'Avanzado', color: 'red', titulo: 'Cruce completo del modelo',
+              explica: 'Une hechos con sismos, zonas y tiempo para ver magnitud, población e impacto juntos.',
+              sql: 'SELECT s.estado, s.magnitud, z.pobtot AS poblacion,\n       f.impacto_economico, t.anio\nFROM fact_impacto_sismos_imputed f\nJOIN dim_sismos s ON f.id_sismo = s.id_sismo\nJOIN dim_zonas z ON f.id_zonas = z.id_zonas\nJOIN dim_tiempo t ON f.id_tiempo = t.id_tiempo\nWHERE s.magnitud > 7.0\nORDER BY s.magnitud DESC\nLIMIT 15;' },
+            { nivel: 'Básico', color: 'green', titulo: 'Listar tablas disponibles',
+              explica: 'Consulta especial que muestra todas las tablas cargadas en memoria.',
+              sql: 'SHOW TABLES;' }
+        ];
+
+        const COLORES = {
+            green:  'bg-green-500/10 text-green-400 border-green-500/30',
+            yellow: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
+            red:    'bg-red-500/10 text-red-400 border-red-500/30'
+        };
+
+        const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
         // ----------------------------------------------------------------------
-        // CARGA DINÁMICA DE ARCHIVOS SQL DESDE EL REPOSITORIO
+        // Render estático: tarjetas de esquema (sin columnas aún) y ejemplos
         // ----------------------------------------------------------------------
-        
-        async function cargarArchivoSQL(nombreArchivo) {
-            try {
-                const response = await fetch(nombreArchivo);
-                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-                let sqlText = await response.text();
-                
-                // Adaptaciones sobre la marcha para asegurar la compatibilidad con el motor SQL del navegador (AlaSQL)
-                sqlText = sqlText.replace(/DOUBLE PRECISION/gi, 'FLOAT'); // AlaSQL maneja flotantes estandar
-                sqlText = sqlText.replace(/hora_utc TIME/gi, 'hora_utc STRING'); // Manejo de tiempo como texto
-                
-                // Limpiar sentencias que no aplican en SQLite/AlaSQL
-                sqlText = sqlText.replace(/DO \$\$.*?\$\$;/gis, ''); // Remueve bloques anónimos DO
-                sqlText = sqlText.replace(/GRANT .*?;/gi, ''); // Remueve GRANTs
-                sqlText = sqlText.replace(/ALTER ROLE .*?;/gi, ''); // Remueve ALTER ROLE
-                
-                // Ejecutar instrucciones separadas por ;
-                const statements = sqlText.split(';');
-                for (let stmt of statements) {
-                    if (stmt.trim()) {
-                        alasql(stmt);
-                    }
+        function renderEsquema() {
+            const grid = document.getElementById('schemaGrid');
+            grid.innerHTML = ARCHIVOS.filter(a => a.table).map(a => `
+                <div class="reveal bg-brand-light border ${a.fact ? 'border-brand-orange/60' : 'border-white/10'} rounded-2xl p-6 flex flex-col">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs uppercase tracking-wide ${a.fact ? 'text-brand-orange' : 'text-gray-500'}">${a.fact ? 'Tabla de hechos' : 'Dimensión'}</span>
+                        <span class="text-xs font-mono text-gray-500">${esc(a.file)}</span>
+                    </div>
+                    <h3 class="font-mono font-bold text-lg text-green-400 mb-2 break-all">${esc(a.table)}</h3>
+                    <p class="text-gray-400 text-sm mb-4">${esc(a.desc)}</p>
+                    <div class="text-xs text-gray-500 mb-1">Columnas:</div>
+                    <div id="cols-${a.table}" class="flex flex-wrap gap-1.5 mb-4 text-xs text-gray-500">Esperando carga...</div>
+                    <button onclick="verTabla('${a.table}')" class="mt-auto self-start text-sm font-semibold text-brand-orange hover:text-white transition-colors">
+                        Ver primeras filas →
+                    </button>
+                </div>`).join('');
+        }
+
+        function renderEjemplos() {
+            document.getElementById('examplesGrid').innerHTML = EJEMPLOS.map((e, i) => `
+                <div class="reveal bg-brand-light border border-white/10 rounded-2xl p-5 flex flex-col">
+                    <span class="self-start text-xs font-semibold px-2 py-0.5 rounded-full border ${COLORES[e.color]} mb-3">${e.nivel}</span>
+                    <h3 class="font-bold mb-1">${esc(e.titulo)}</h3>
+                    <p class="text-gray-400 text-sm mb-3">${esc(e.explica)}</p>
+                    <pre class="bg-gray-900 text-green-400 font-mono text-xs p-3 rounded-lg overflow-x-auto mb-4 flex-1">${esc(e.sql)}</pre>
+                    <button onclick="usarEjemplo(${i})" class="self-start bg-brand-orange hover:bg-brand-red text-white text-sm font-bold py-1.5 px-4 rounded-lg transition-colors">
+                        Probar ▶
+                    </button>
+                </div>`).join('');
+        }
+
+        function usarEjemplo(i) {
+            document.getElementById('sqlInput').value = EJEMPLOS[i].sql;
+            document.getElementById('explorar').scrollIntoView({ behavior: 'smooth' });
+            if (!document.getElementById('btnEjecutar').disabled) ejecutarConsulta();
+        }
+
+        function verTabla(nombre) {
+            document.getElementById('sqlInput').value = `SELECT *\nFROM ${nombre}\nLIMIT 10;`;
+            document.getElementById('explorar').scrollIntoView({ behavior: 'smooth' });
+            if (!document.getElementById('btnEjecutar').disabled) ejecutarConsulta();
+        }
+
+        // Rellena columnas leyendo el esquema real que cargó AlaSQL
+        function poblarColumnas() {
+            const chips = document.getElementById('tableChips');
+            ARCHIVOS.filter(a => a.table).forEach(a => {
+                const cont = document.getElementById('cols-' + a.table);
+                const t = alasql.tables[a.table];
+                if (cont) {
+                    cont.innerHTML = (t && t.columns && t.columns.length)
+                        ? t.columns.map(c => `<span class="font-mono bg-gray-900 text-gray-300 px-2 py-0.5 rounded">${esc(c.columnid)}</span>`).join('')
+                        : '<span class="text-red-400">Tabla no encontrada</span>';
                 }
-            } catch (error) {
-                console.error(`Fallo al cargar ${nombreArchivo}:`, error);
-                throw error;
+                chips.insertAdjacentHTML('beforeend',
+                    `<button onclick="verTabla('${a.table}')" class="font-mono text-xs bg-gray-800 hover:bg-gray-700 text-green-400 px-2 py-1 rounded transition-colors">${a.table}</button>`);
+            });
+        }
+
+        // ----------------------------------------------------------------------
+        // CARGA DE ARCHIVOS SQL
+        // ----------------------------------------------------------------------
+        function dividirSentencias(sql) {
+            const out = []; let cur = ''; let q = null;
+            for (let i = 0; i < sql.length; i++) {
+                const ch = sql[i];
+                if (q) { cur += ch; if (ch === q) q = null; }
+                else if (ch === "'" || ch === '"') { q = ch; cur += ch; }
+                else if (ch === ';') { out.push(cur); cur = ''; }
+                else cur += ch;
+            }
+            if (cur.trim()) out.push(cur);
+            return out.map(s => s.trim()).filter(Boolean);
+        }
+
+        async function cargarArchivoSQL(nombreArchivo) {
+            const ruta = RUTA_SQL + nombreArchivo;
+            const response = await fetch(ruta);
+            if (!response.ok) throw new Error(`${ruta}: HTTP ${response.status} (¿existe esa ruta en el repositorio y el nombre coincide exactamente, con mayúsculas/minúsculas?)`);
+            let sqlText = await response.text();
+
+            sqlText = sqlText.replace(/\/\*[\s\S]*?\*\//g, '');            // comentarios /* */
+            sqlText = sqlText.replace(/^\s*--.*$/gm, '');                   // comentarios --
+            sqlText = sqlText.replace(/DOUBLE PRECISION/gi, 'FLOAT');
+            sqlText = sqlText.replace(/hora_utc\s+TIME/gi, 'hora_utc STRING');
+            sqlText = sqlText.replace(/DO\s+\$\$[\s\S]*?\$\$\s*;/gi, '');
+            sqlText = sqlText.replace(/GRANT [\s\S]*?;/gi, '');
+            sqlText = sqlText.replace(/ALTER ROLE [\s\S]*?;/gi, '');
+            sqlText = sqlText.replace(/^\s*(BEGIN|COMMIT|START TRANSACTION)\s*;/gim, '');
+
+            for (const stmt of dividirSentencias(sqlText)) {
+                try { alasql(stmt); }
+                catch (e) { throw new Error(`${nombreArchivo}: ${e.message}\n→ Sentencia: ${stmt.slice(0, 160)}...`); }
             }
         }
 
         async function inicializarBaseDeDatos() {
             const statusDot = document.getElementById('status-dot');
             const statusText = document.getElementById('status-text');
-            const btnEjecutar = document.getElementById('btnEjecutar');
+            const btn = document.getElementById('btnEjecutar');
 
             try {
-                // Leer e inyectar archivos del repositorio automáticamente
-                await cargarArchivoSQL('00-datawarehouse_tables.sql');
-                await cargarArchivoSQL('01-dim_zonas.sql');
-                await cargarArchivoSQL('02-dim_tiempo.sql');
-                await cargarArchivoSQL('03-dim_sismos.sql');
-                await cargarArchivoSQL('04-dim_economia.sql');
-                await cargarArchivoSQL('05-fact_impacto_sismos_imputed.sql');
-                
-                // Si todo se cargó, actualizar UI a estado activo
+                for (const a of ARCHIVOS) {
+                    statusText.textContent = `Cargando ${a.file}...`;
+                    await cargarArchivoSQL(a.file);
+                }
                 statusDot.className = 'w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]';
                 statusText.className = 'text-green-400';
                 statusText.textContent = 'Data Warehouse (En Memoria) Activo y Listo';
-                
-                btnEjecutar.disabled = false;
-                btnEjecutar.className = 'mt-4 bg-brand-orange hover:bg-brand-red text-white font-bold py-2 px-6 rounded-lg transition-colors cursor-pointer';
-                btnEjecutar.textContent = 'Ejecutar Query';
-                
-                // Ejecutar una consulta inicial de prueba automáticamente
-                ejecutarConsulta();
 
+                btn.disabled = false;
+                btn.className = 'bg-brand-orange hover:bg-brand-red text-white font-bold py-2 px-6 rounded-lg transition-colors cursor-pointer';
+                btn.textContent = 'Ejecutar Query';
+
+                poblarColumnas();
+                ejecutarConsulta();
             } catch (error) {
+                console.error(error);
                 statusDot.className = 'w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]';
                 statusText.className = 'text-red-400';
-                statusText.textContent = 'Error: Faltan archivos SQL en la raíz o CORS bloqueado.';
-                console.warn("Nota: Asegúrate de estar corriendo esto en un servidor local (Localhost) y no abriendo el archivo local file:// directamente.");
+                statusText.textContent = 'Error al cargar la base de datos (revisa la consola F12 para el detalle).';
+                const err = document.getElementById('errorMessage');
+                err.textContent = error.message;
+                err.classList.remove('hidden');
+                // Aun con error, mostrar las columnas de las tablas que sí se cargaron
+                poblarColumnas();
             }
         }
 
         // ----------------------------------------------------------------------
-        // MOTOR DE CONSULTAS SQL DE LA UI
+        // EJECUTOR DE CONSULTAS
         // ----------------------------------------------------------------------
-
         function ejecutarConsulta() {
             const query = document.getElementById('sqlInput').value;
             const headersRow = document.getElementById('tableHeaders');
             const bodyRow = document.getElementById('tableBody');
             const errorDiv = document.getElementById('errorMessage');
+            const rowCount = document.getElementById('rowCount');
 
             headersRow.innerHTML = '';
             bodyRow.innerHTML = '';
             errorDiv.classList.add('hidden');
+            rowCount.textContent = '';
 
             try {
-                // Ejecutar la consulta en la base de datos en memoria local
-                const resultados = alasql(query);
+                let resultados = alasql(query);
+                if (!Array.isArray(resultados)) resultados = [{ resultado: resultados }];
+                if (resultados.length && Array.isArray(resultados[0])) resultados = resultados[resultados.length - 1];
 
                 if (resultados.length === 0) {
-                    bodyRow.innerHTML = '<tr><td class="px-6 py-4 text-center text-gray-500" colspan="100%">No se encontraron resultados para la consulta.</td></tr>';
+                    bodyRow.innerHTML = '<tr><td class="px-6 py-4 text-center text-gray-500" colspan="100">No se encontraron resultados para la consulta.</td></tr>';
                     return;
                 }
 
-                // Renderizar Headers
                 const columnas = Object.keys(resultados[0]);
-                columnas.forEach(col => {
-                    headersRow.innerHTML += `<th scope="col" class="px-6 py-3">${col}</th>`;
-                });
+                headersRow.innerHTML = columnas.map(c => `<th scope="col" class="px-6 py-3">${esc(c)}</th>`).join('');
 
-                // Renderizar Filas
-                resultados.forEach(fila => {
-                    let htmlFila = '<tr class="border-b border-white/5 hover:bg-white/5">';
-                    columnas.forEach(col => {
+                bodyRow.innerHTML = resultados.map(fila => {
+                    const celdas = columnas.map(col => {
                         let val = fila[col];
-                        // Formatear decimales si es necesario para evitar números excesivamente largos
-                        if(typeof val === 'number' && !Number.isInteger(val)) val = val.toFixed(4);
-                        htmlFila += `<td class="px-6 py-4 whitespace-nowrap">${val !== null ? val : 'NULL'}</td>`;
-                    });
-                    htmlFila += '</tr>';
-                    bodyRow.innerHTML += htmlFila;
-                });
+                        if (typeof val === 'number' && !Number.isInteger(val)) val = val.toFixed(4);
+                        return `<td class="px-6 py-4 whitespace-nowrap">${val !== null && val !== undefined ? esc(val) : 'NULL'}</td>`;
+                    }).join('');
+                    return `<tr class="border-b border-white/5 hover:bg-white/5">${celdas}</tr>`;
+                }).join('');
 
+                rowCount.textContent = `${resultados.length} fila(s)`;
             } catch (error) {
                 errorDiv.textContent = 'Error SQL: ' + error.message;
                 errorDiv.classList.remove('hidden');
             }
         }
+
+        // ----------------------------------------------------------------------
+        // INICIO
+        // ----------------------------------------------------------------------
+        document.addEventListener("DOMContentLoaded", () => {
+            renderEsquema();
+            renderEjemplos();
+
+            const reveals = document.querySelectorAll(".reveal");
+            const revealOnScroll = () => {
+                const h = window.innerHeight;
+                reveals.forEach(r => { if (r.getBoundingClientRect().top < h - 60) r.classList.add("active"); });
+            };
+            window.addEventListener("scroll", revealOnScroll);
+            revealOnScroll();
+
+            const nav = document.querySelector('nav');
+            window.addEventListener('scroll', () => {
+                nav.classList.toggle('shadow-lg', window.scrollY > 50);
+                nav.classList.toggle('bg-brand-dark/95', window.scrollY > 50);
+            });
+
+            inicializarBaseDeDatos();
+        });
     </script>
 </body>
 </html>
