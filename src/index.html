@@ -29,6 +29,9 @@
                               linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
             background-size: 40px 40px;
         }
+        /* Mapa: oscurece los mosaicos de OpenStreetMap sin necesitar API key */
+        .tiles-dark { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.55); }
+        #mapa { background: #1b1b1b; }
     </style>
     <script>
         tailwind.config = {
@@ -439,41 +442,9 @@
             });
         });
     </script>
-    <script>
-    const CONTENEDOR_URL = '/api/health.php';
-
-    async function checarEstadoContenedor() {
-        const dot = document.getElementById('status-dot');
-        const text = document.getElementById('status-text');
-
-        try {
-            // Intentamos contactar al contenedor
-            const response = await fetch(CONTENEDOR_URL);
-            
-            // Si el contenedor responde exitosamente (código 200-299)
-            if (response.ok) {
-                dot.className = 'w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]';
-                text.textContent = 'Data Warehouse Activo';
-                text.className = 'text-sm font-medium text-green-400';
-            } else {
-                throw new Error('Respondió con error');
-            }
-        } catch (error) {
-            // Si el contenedor está apagado, la conexión es rechazada y cae aquí
-            dot.className = 'w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]';
-            text.textContent = 'Data Warehouse Inactivo';
-            text.className = 'text-sm font-medium text-red-400';
-        }
-    }
-
-    // 1. Ejecutar la revisión inmediatamente al abrir la página
-    checarEstadoContenedor();
-
-    // 2. Volver a revisar automáticamente cada 10 segundos (10000 milisegundos)
-    setInterval(checarEstadoContenedor, 10000);
-</script>
+    
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="/assets/app.js"></script>
+<script src="assets/app.js"></script>
 </body>
 </html>

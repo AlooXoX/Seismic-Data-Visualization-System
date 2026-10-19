@@ -16,6 +16,51 @@ const fmtVal = (v) => {
 const asNum = (v) => (v === null || v === undefined || v === '' || isNaN(Number(v))) ? null : Number(v);
 
 /* ------------------------------------------------------------------ */
+/* Localiza el contenedor: el mismo servidor, o http://localhost       */
+/* (sirve igual desde Apache, Live Server o GitHub Pages)              */
+/* ------------------------------------------------------------------ */
+const CANDIDATAS = ['', 'http://localhost', 'http://localhost:8080'];
+let API = null;                       // base que respondió bien
+
+async function sondear(base) {
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 2500);
+    try {
+        const r = await fetch(base + '/api/health.php', { cache: 'no-store', signal: ctl.signal });
+        if (!r.ok) return false;
+        return (await r.json()).status === 'ok';
+    } catch { return false; } finally { clearTimeout(t); }
+}
+async function descubrirAPI() {
+    for (const base of CANDIDATAS) {
+        if (await sondear(base)) { API = base; return true; }
+    }
+    API = null;
+    return false;
+}
+async function apiFetch(path, opts) {
+    if (API === null && !(await descubrirAPI())) {
+        throw new Error('El Data Warehouse está inactivo: no se encontró el contenedor.');
+    }
+    try { return await fetch(API + path, opts); }
+    catch { API = null; throw new Error('Se perdió la conexión con el Data Warehouse.'); }
+}
+
+async function estadoContenedor() {
+    const dot = $('status-dot'), text = $('status-text');
+    const ok = await descubrirAPI();
+    if (ok) {
+        dot.className = 'w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]';
+        text.textContent = 'Data Warehouse Activo';
+        text.className = 'text-sm font-medium text-green-400';
+    } else {
+        dot.className = 'w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]';
+        text.textContent = 'Data Warehouse Inactivo';
+        text.className = 'text-sm font-medium text-red-400';
+    }
+    return ok;
+}
+
+/* ------------------------------------------------------------------ */
 /* Tabla con orden por columna                                         */
 /* ------------------------------------------------------------------ */
 function tabla(el, cols, rows) {
@@ -88,7 +133,7 @@ function opcionesAnios(sel, min, max, valor) {
 
 async function cargarFiltros() {
     try {
-        const r = await fetch('/api/filters.php');
+        const r = await apiFetch('/api/filters.php');
         meta = await r.json();
         if (!r.ok || meta.error) throw new Error(meta.error);
 
@@ -173,26 +218,29 @@ function pintarGraficas(d) {
     });
 }
 
-function colorMag(m) {
-    const lo = meta.mag_min, hi = meta.mag_max;
-    const t = hi > lo ? Math.min(1, Math.max(0, (m - lo) / (hi - lo))) : 0.5;
+// Escala de color relativa a los sismos que se están mostrando (amarillo → rojo).
+function colorMag(t) {
     const a = [250, 204, 21], b = [239, 68, 68];
     return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`;
 }
 
 function pintarMapa(pts, total, limite) {
     if (!mapa) {
-        mapa = L.map('mapa', { scrollWheelZoom: false }).setView([23.6, -102.5], 5);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 12,
+        // Canvas: aguanta miles de puntos sin ponerse lento.
+        mapa = L.map('mapa', { scrollWheelZoom: false, preferCanvas: true }).setView([23.6, -102.5], 5);
+        // Mosaicos de OpenStreetMap (sin API key). La clase 'tiles-dark' los oscurece con CSS.
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18, className: 'tiles-dark',
         }).addTo(mapa);
         capaMapa = L.layerGroup().addTo(mapa);
     }
     capaMapa.clearLayers();
-    const hi = meta.mag_max, lo = meta.mag_min;
+    const mags = pts.map(p => p.magnitud).filter(m => m !== null);
+    const lo = mags.length ? Math.min(...mags) : 0, hi = mags.length ? Math.max(...mags) : 0;
     pts.forEach(p => {
-        const m = p.magnitud ?? lo, t = hi > lo ? (m - lo) / (hi - lo) : 0.5, c = colorMag(m);
-        L.circleMarker([p.lat, p.lon], { radius: 3 + 9 * t, color: c, weight: 1, fillColor: c, fillOpacity: 0.55 })
+        const m = p.magnitud ?? lo, t = hi > lo ? (m - lo) / (hi - lo) : 0.5, c = colorMag(t);
+        L.circleMarker([p.lat, p.lon], { radius: 2 + 5 * t, color: c, weight: 0.5, fillColor: c, fillOpacity: 0.4 })
             .bindPopup(
                 `<b>Magnitud ${p.magnitud === null ? '—' : nf.format(p.magnitud)}</b><br>` +
                 `${esc(p.fecha)}<br>${esc(p.lugar || '')}<br>` +
@@ -211,7 +259,7 @@ async function buscar() {
     $('explorador-error').classList.add('hidden');
     $('explorador-estado').textContent = 'Consultando...';
     try {
-        const r = await fetch('/api/stats.php?' + filtrosQS());
+        const r = await apiFetch('/api/stats.php?' + filtrosQS());
         const d = await r.json();
         if (mi !== token) return;               // llegó una respuesta vieja
         if (!r.ok || d.error) throw new Error(d.error || 'Error desconocido');
@@ -300,7 +348,7 @@ async function ejecutar() {
     $('error-consulta').classList.add('hidden');
     $('estado-consulta').textContent = 'Ejecutando...';
     try {
-        const r = await fetch('/api/query.php', {
+        const r = await apiFetch('/api/query.php', {
             method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({sql}),
         });
         const d = await r.json();
@@ -337,7 +385,7 @@ function insertarEnEditor(txt) {
 
 async function cargarCatalogo() {
     try {
-        const r = await fetch('/api/catalog.php');
+        const r = await apiFetch('/api/catalog.php');
         const d = await r.json();
         if (!r.ok || d.error) throw new Error();
 
@@ -370,7 +418,19 @@ async function cargarCatalogo() {
 }
 
 /* ------------------------------------------------------------------ */
+let iniciado = false;
+async function iniciar() {
+    if (iniciado) return;
+    iniciado = true;
+    cargarCatalogo();
+    if (!(await cargarFiltros())) iniciado = false;   // se reintenta en el siguiente chequeo
+    else buscar();
+}
+async function vigilar() {
+    if (await estadoContenedor()) iniciar();
+}
+
 pintarHist();
-cargarCatalogo();
-cargarFiltros().then(ok => { if (ok) buscar(); });
+vigilar();
+setInterval(vigilar, 10000);
 })();

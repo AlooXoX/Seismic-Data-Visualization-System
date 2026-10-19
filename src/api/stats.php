@@ -5,7 +5,7 @@ require __DIR__ . '/db.php';
 // y devuelve KPIs, series para gráficas, puntos del mapa y una tabla de eventos.
 // También devuelve el SQL equivalente para mostrárselo al usuario.
 
-const MAX_MAPA  = 1500;
+const MAX_MAPA  = 5000;
 const MAX_TABLA = 100;
 
 function num_or_null(string $k, bool $int): int|float|null {
